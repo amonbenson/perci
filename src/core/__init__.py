@@ -6,9 +6,9 @@ from typing import Optional
 from .node import Node, RootNode
 
 
-def perci(data: Optional[dict] = None, root_key: str = "root") -> RootNode:
+def reactive(data: Optional[dict] = None, root_key: str = "root") -> RootNode:
     """
-    Creates a Perci state tree from a dictionary.
+    Creates a reactive state tree from a dictionary.
     """
 
     if data is None:
