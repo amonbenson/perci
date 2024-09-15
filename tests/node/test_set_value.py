@@ -1,6 +1,6 @@
 # pylint: skip-file
 
-from src.core.node import Node, RootNode
+from src.perci.core.node import Node, RootNode
 
 
 def test_set_value():

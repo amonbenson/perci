@@ -1,7 +1,7 @@
 # pylint: skip-file
 
 import pytest
-from src.core.node import Node, RootNode
+from src.perci.core.node import Node, RootNode
 
 
 def test_add_pathological():
