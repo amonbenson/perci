@@ -17,7 +17,7 @@ class Watcher:
         self.handler = handler
 
     def invoke(self, change: Change):
-        if not path_matches(self.path, change.path, allow_children=True):
+        if path_matches(self.path, change.path, allow_children=True):
             self.handler(change)
 
 

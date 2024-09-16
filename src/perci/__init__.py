@@ -74,7 +74,7 @@ def create_watcher(node: ReactiveNode, handler: callable, path: str = "") -> Wat
     :param path: The path to watch. Defaults to None.
     """
 
-    absolute_path = node.get_path() + path.split(".")
+    absolute_path = node.get_path() + (path.split(".") if path else [])
     watcher = Watcher(absolute_path, handler)
     node.get_namespace().add_watcher(watcher)
     return watcher
@@ -88,7 +88,7 @@ def create_queue_watcher(node: ReactiveNode, path: str = "") -> QueueWatcher:
     :param path: The path to watch. Defaults to None.
     """
 
-    absolute_path = node.get_path() + path.split(".")
+    absolute_path = node.get_path() + (path.split(".") if path else [])
     watcher = QueueWatcher(absolute_path)
     node.get_namespace().add_watcher(watcher)
     return watcher
