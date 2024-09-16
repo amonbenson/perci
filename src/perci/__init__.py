@@ -24,7 +24,7 @@ def create_root_node(root_key: str = "root") -> ReactiveNode:
     return node
 
 
-def reactive(data: Optional[dict] = None, root_key: str = "root") -> ReactiveNode:
+def create_dict_node(data: Optional[dict] = None, root_key: str = "root") -> ReactiveNode:
     """
     Creates a reactive tree from the given data.
 
@@ -49,3 +49,16 @@ def reactive(data: Optional[dict] = None, root_key: str = "root") -> ReactiveNod
         node.pack(key, value)
 
     return node
+
+
+def reactive(data: Optional[dict] = None, root_key: str = "root") -> ReactiveNode:
+    """
+    Creates a reactive tree from the given data.
+
+    :param data: The data to create the tree from.
+    :param root_key: The key of the root node. Defaults to "root".
+
+    :return: The root node of the reactive tree.
+    """
+
+    return create_dict_node(data, root_key)
