@@ -87,7 +87,12 @@ class ReactiveNode:
     def get_value(self) -> AtomicType:
         """
         Returns the value of the node.
+
+        :raises ValueError: If the node is not a leaf.
         """
+
+        if not self.is_leaf():
+            raise ValueError("Node is not a leaf")
 
         return self._value
 
@@ -101,6 +106,8 @@ class ReactiveNode:
         with self._optional_namespace_lock():
             if not isinstance(value, (int, float, str, bool, type(None))):
                 raise ValueError(f"Value {value} is not an atomic type")
+            if not self.is_leaf():
+                raise ValueError("Node is not a leaf")
 
             if self._value == value:
                 return
