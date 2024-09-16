@@ -17,7 +17,12 @@ def test_empty_node():
 
 
 def test_add_single_child():
-    parent = create_dict_node({"child": 42}, "parent")
+    parent = create_dict_node(
+        {
+            "child": 42,
+        },
+        "parent",
+    )
 
     assert isinstance(parent, ReactiveDictNode)
     assert parent.has_child("child")
@@ -39,7 +44,13 @@ def test_add_single_child():
 
 
 def test_add_multiple_children():
-    parent = create_dict_node({"child1": 42, "child2": 43}, "parent")
+    parent = create_dict_node(
+        {
+            "child1": 42,
+            "child2": 43,
+        },
+        "parent",
+    )
 
     assert isinstance(parent, ReactiveDictNode)
     assert parent.has_child("child1")
@@ -62,3 +73,37 @@ def test_add_multiple_children():
     assert child2.is_leaf()
     assert not child2.is_root()
     assert child2.get_value() == 43
+
+
+def test_add_nested_children():
+    parent = create_dict_node(
+        {
+            "child": {
+                "nested_child": 42,
+            }
+        },
+        "parent",
+    )
+
+    assert isinstance(parent, ReactiveDictNode)
+    assert parent.has_child("child")
+
+    child = parent.get_child("child")
+
+    assert len(child.get_children()) == 1
+    assert child.get_key() == "child"
+    assert child.get_parent() == parent
+    assert child.get_path() == ["parent", "child"]
+    assert not child.is_leaf()
+    assert not child.is_root()
+
+    assert child.has_child("nested_child")
+
+    nested_child = child.get_child("nested_child")
+
+    assert nested_child.get_key() == "nested_child"
+    assert nested_child.get_parent() == child
+    assert nested_child.get_path() == ["parent", "child", "nested_child"]
+    assert nested_child.is_leaf()
+    assert not nested_child.is_root()
+    assert nested_child.get_value() == 42

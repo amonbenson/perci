@@ -101,7 +101,7 @@ class ReactiveDictNode(ReactiveNode):
 
         # invoke the generic pack method for each key-value pair
         for k, v in data.items():
-            self.pack(k, v)
+            child.pack(k, v)
 
 
 ReactiveNode.PACK_METHODS[dict] = ReactiveDictNode.pack_dict

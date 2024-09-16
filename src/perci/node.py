@@ -169,6 +169,13 @@ class ReactiveNode:
 
         return self._children.get(key)
 
+    def get_children(self) -> dict[str, "ReactiveNode"]:
+        """
+        Returns the children of the node.
+        """
+
+        return self._children
+
     def get_parent(self) -> Optional["ReactiveNode"]:
         """
         Returns the parent of the node.
@@ -209,6 +216,13 @@ class ReactiveNode:
         """
 
         return self._path
+
+    def get_path_repr(self) -> str:
+        """
+        Returns a string representation of the path of the node.
+        """
+
+        return ".".join(self._path)
 
     def is_leaf(self) -> bool:
         """
