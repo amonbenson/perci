@@ -3,8 +3,9 @@ This module is the entry point for the package.
 """
 
 from typing import Optional
-from .node import ReactiveNode
 from .namespace import ReactiveNamespace
+from .node import ReactiveNode
+from .dict_node import ReactiveDictNode
 
 
 def create_root_node(root_key: str = "root") -> ReactiveNode:
@@ -16,11 +17,11 @@ def create_root_node(root_key: str = "root") -> ReactiveNode:
     :return: The root node of the reactive tree.
     """
 
-    root_node = ReactiveNode(root_key)
-    namespace = ReactiveNamespace(root_node)
-    root_node.set_namespace(namespace, [root_key])
+    node = ReactiveNode(root_key)
+    namespace = ReactiveNamespace(node)
+    node.set_namespace(namespace, [root_key])
 
-    return root_node
+    return node
 
 
 def reactive(data: Optional[dict] = None, root_key: str = "root") -> ReactiveNode:
@@ -39,11 +40,12 @@ def reactive(data: Optional[dict] = None, root_key: str = "root") -> ReactiveNod
     if not isinstance(data, dict):
         raise ValueError("Data must be a dictionary")
 
-    if data:
-        raise NotImplementedError("Converting from a dictionary is not supported yet")
+    node = ReactiveDictNode(root_key)
+    namespace = ReactiveNamespace(node)
+    node.set_namespace(namespace, [root_key])
 
-    node = create_root_node(root_key)
-
-    # TODO: Implement dict conversion
+    # pack the data into the root node
+    for key, value in data.items():
+        node.pack(key, value)
 
     return node

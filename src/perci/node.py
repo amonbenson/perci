@@ -5,9 +5,13 @@ Provides a class to represent a node in a reactive tree.
 import re
 import threading
 from contextlib import nullcontext
-from typing import Any, Optional, ContextManager
+from typing import Any, Union, Optional, ContextManager
 from .namespace import ReactiveNamespace
 from .changes import AddChange, RemoveChange, UpdateChange
+
+
+AtomicType = int | float | str | bool | None
+UnpackedType = Union[AtomicType, "ReactiveNode"]
 
 
 class MissingNamespaceError(Exception):
@@ -25,12 +29,14 @@ class ReactiveNode:
     :raises ValueError: If the key is invalid.
     """
 
+    PACK_METHODS: dict[type, callable] = {}
+
     def __init__(self, key: str):
         self._key: str = key
         if not self.is_key_valid(key):
             raise ValueError(f"Key {key} is invalid")
 
-        self._value: Any = None
+        self._value: AtomicType = None
 
         self._children: dict[str, ReactiveNode] = {}
         self._parent: Optional[ReactiveNode] = None
@@ -78,14 +84,14 @@ class ReactiveNode:
 
         return self._key
 
-    def get_value(self) -> Any:
+    def get_value(self) -> AtomicType:
         """
         Returns the value of the node.
         """
 
         return self._value
 
-    def set_value(self, value: Any):
+    def set_value(self, value: AtomicType):
         """
         Sets the value of the node.
 
@@ -93,6 +99,9 @@ class ReactiveNode:
         """
 
         with self._optional_namespace_lock():
+            if not isinstance(value, (int, float, str, bool, type(None))):
+                raise ValueError(f"Value {value} is not an atomic type")
+
             if self._value == value:
                 return
 
@@ -136,7 +145,7 @@ class ReactiveNode:
 
             child = self._children.pop(key)
             child._parent = None  # pylint: disable=protected-access
-            child.set_namespace(None, [])
+            child.set_namespace(None, [child.get_key()])
 
             self._namespace.change_tracker.push_change(RemoveChange(path=self._path, key=key))
 
@@ -184,7 +193,7 @@ class ReactiveNode:
         :raises ValueError: If the node is already part of a namespace.
         """
 
-        if self._namespace:
+        if namespace and self._namespace:
             raise ValueError(f"Node {self.get_key()} is already part of a namespace")
 
         self._namespace = namespace
@@ -220,3 +229,31 @@ class ReactiveNode:
 
     def __repr__(self) -> str:
         return str(self)
+
+    def unpack(self) -> UnpackedType:
+        """
+        Unpacks the node. If the node is a leaf, returns the value. Otherwise, returns the node itself.
+        """
+
+        if self.is_leaf():
+            return self.get_value()
+        else:
+            return self
+
+    def pack_atomic(self, key: str, value: AtomicType):
+        child = ReactiveNode(key)
+        self.add_child(child)
+        child.set_value(value)
+
+    def pack(self, key: str, value: Any):
+        if type(value) not in ReactiveNode.PACK_METHODS:
+            raise ValueError(f"Cannot pack item {key}={value} of unsupported type {type(value)}")
+
+        ReactiveNode.PACK_METHODS[type(value)](self, key, value)
+
+
+ReactiveNode.PACK_METHODS[int] = ReactiveNode.pack_atomic
+ReactiveNode.PACK_METHODS[float] = ReactiveNode.pack_atomic
+ReactiveNode.PACK_METHODS[str] = ReactiveNode.pack_atomic
+ReactiveNode.PACK_METHODS[bool] = ReactiveNode.pack_atomic
+ReactiveNode.PACK_METHODS[type(None)] = ReactiveNode.pack_atomic
