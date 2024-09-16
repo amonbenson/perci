@@ -128,3 +128,37 @@ def test_remove_child():
 
     assert isinstance(parent.get_namespace(), ReactiveNamespace)
     assert child.get_namespace() is None
+
+
+def test_remove_nested_children():
+    parent = create_root_node("parent")
+
+    child1 = ReactiveNode("child1")
+    parent.add_child(child1)
+
+    child2 = ReactiveNode("child2")
+    child1.add_child(child2)
+
+    parent.remove_child("child1")
+
+    assert parent.get_child("child1") is None
+    assert child1.get_parent() is None
+    assert child1.get_path() == ["child1"]
+    assert not child1.is_leaf()
+    assert child1.is_root()
+
+    assert child1.get_child("child2") is child2
+    assert child2.get_parent() == child1
+    assert child2.get_path() == ["child1", "child2"]
+    assert child2.is_leaf()
+    assert not child2.is_root()
+
+    assert parent.get_key() == "parent"
+    assert parent.get_parent() is None
+    assert parent.get_path() == ["parent"]
+    assert parent.is_leaf()
+    assert parent.is_root()
+
+    assert isinstance(parent.get_namespace(), ReactiveNamespace)
+    assert child1.get_namespace() is None
+    assert child2.get_namespace() is None
