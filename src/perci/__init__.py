@@ -6,6 +6,7 @@ from typing import Optional
 from .namespace import ReactiveNamespace
 from .node import ReactiveNode
 from .dict_node import ReactiveDictNode
+from .watcher import Watcher, QueueWatcher
 
 
 def create_root_node(root_key: str = "root") -> ReactiveNode:
@@ -62,3 +63,44 @@ def reactive(data: Optional[dict] = None, root_key: str = "root") -> ReactiveNod
     """
 
     return create_dict_node(data, root_key)
+
+
+def create_watcher(node: ReactiveNode, handler: callable, path: str = "") -> Watcher:
+    """
+    Creates a watcher that calls the given handler when a change occurs.
+
+    :param node: The node to watch.
+    :param handler: The handler to call when a change occurs.
+    :param path: The path to watch. Defaults to None.
+    """
+
+    absolute_path = node.get_path() + path.split(".")
+    watcher = Watcher(absolute_path, handler)
+    node.get_namespace().add_watcher(watcher)
+    return watcher
+
+
+def create_queue_watcher(node: ReactiveNode, path: str = "") -> QueueWatcher:
+    """
+    Creates a thread-safe watcher that stores changes in a queue.
+
+    :param node: The node to watch.
+    :param path: The path to watch. Defaults to None.
+    """
+
+    absolute_path = node.get_path() + path.split(".")
+    watcher = QueueWatcher(absolute_path)
+    node.get_namespace().add_watcher(watcher)
+    return watcher
+
+
+def watch(node: ReactiveNode, handler: callable, path: str = "") -> Watcher:
+    """
+    Adds a watcher to the given node.
+
+    :param node: The node to watch.
+    :param handler: The handler to call when a change occurs.
+    :param path: The path to watch. Defaults to None.
+    """
+
+    return create_watcher(node, handler, path)

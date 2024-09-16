@@ -4,7 +4,8 @@ Provides a class to group reactive nodes into a single thread-safe namespace.
 
 import threading
 from typing import TYPE_CHECKING
-from .changes import ChangeTracker
+from .watcher import Watcher, path_matches
+from .changes import Change
 
 if TYPE_CHECKING:
     from .node import ReactiveNode
@@ -19,5 +20,16 @@ class ReactiveNamespace:
 
     def __init__(self, root_node: "ReactiveNode"):
         self.root = root_node
-        self.change_tracker = ChangeTracker()
         self.lock = threading.Lock()
+
+        self._watchers: list[Watcher] = []
+
+    def add_watcher(self, watcher: Watcher):
+        self._watchers.append(watcher)
+
+    def remove_watcher(self, path: list[str]):
+        self._watchers = [watcher for watcher in self._watchers if path_matches(path, watcher.path, allow_children=True)]
+
+    def invoke_watcher(self, change: Change):
+        for watcher in self._watchers:
+            watcher.invoke(change)

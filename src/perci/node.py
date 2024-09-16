@@ -113,7 +113,7 @@ class ReactiveNode:
                 return
 
             self._value = value
-            self._namespace.change_tracker.push_change(UpdateChange(path=self._path, value=value))
+            self._namespace.invoke_watcher(UpdateChange(path=self._path, value=value))
 
     def add_child(self, child: "ReactiveNode"):
         """
@@ -135,7 +135,7 @@ class ReactiveNode:
             child._parent = self  # pylint: disable=protected-access
             child.set_namespace(self._namespace, self._path + [child.get_key()])
 
-            self._namespace.change_tracker.push_change(AddChange(path=self._path, key=child.get_key()))
+            self._namespace.invoke_watcher(AddChange(path=self._path, key=child.get_key()))
 
     def remove_child(self, key: str):
         """
@@ -154,7 +154,7 @@ class ReactiveNode:
             child._parent = None  # pylint: disable=protected-access
             child.set_namespace(None, [child.get_key()])
 
-            self._namespace.change_tracker.push_change(RemoveChange(path=self._path, key=key))
+            self._namespace.invoke_watcher(RemoveChange(path=self._path, key=key))
 
     def has_child(self, key: str) -> bool:
         """

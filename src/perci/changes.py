@@ -60,37 +60,3 @@ class UpdateChange(Change):
 
     def __post_init__(self):
         self.change_type = "update"
-
-
-class ChangeTracker:
-    """
-    Tracks changes in a reactive tree.
-    """
-
-    def __init__(self):
-        self._changes: list[Change] = []
-        self._lock = threading.Lock()
-
-    def push_change(self, change: Change):
-        """
-        Adds a change to the tracker.
-
-        :param change: The change to push.
-        """
-
-        with self._lock:
-            self._changes.append(change)
-
-    def get_changes(self) -> list[Change]:
-        """
-        Retrieves all changes from the tracker.
-
-        :return: A list of changes.
-
-        The changes are cleared from the tracker after retrieval.
-        """
-
-        with self._lock:
-            changes = self._changes
-            self._changes = []
-            return changes
