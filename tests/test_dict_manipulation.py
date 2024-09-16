@@ -4,7 +4,7 @@ from src.perci import create_dict_node
 from src.perci.dict_node import ReactiveDictNode
 
 
-def test_add_atomic_child():
+def test_add_atomic():
     parent = create_dict_node({}, "parent")
 
     parent["child"] = 42
@@ -22,7 +22,7 @@ def test_add_atomic_child():
     assert child.get_value() == 42
 
 
-def test_add_dict_child():
+def test_add_dict():
     parent = create_dict_node({}, "parent")
 
     parent["child"] = {
@@ -63,3 +63,148 @@ def test_add_dict_child():
 
     assert grandchild != child.get_child("grandchild")
     assert child["grandchild"]["great_grandchild"] == 44
+
+
+def test_delete():
+    parent = create_dict_node(
+        {
+            "child": {
+                "grandchild": 42,
+            },
+        },
+        "parent",
+    )
+
+    assert parent.has_child("child")
+
+    del parent["child"]
+
+    assert not parent.has_child("child")
+    assert parent.is_leaf()
+    assert parent.is_root()
+
+
+def test_get():
+    parent = create_dict_node(
+        {
+            "child": {
+                "grandchild": 42,
+            },
+        },
+        "parent",
+    )
+
+    assert parent.get("child").get("grandchild") == 42
+    assert parent.get("child").get("grandchild2", 43) == 43
+
+
+def test_keys():
+    parent = create_dict_node(
+        {
+            "child1": 42,
+            "child2": 43,
+        },
+        "parent",
+    )
+
+    assert parent.keys() == ["child1", "child2"]
+
+
+def test_values():
+    parent = create_dict_node(
+        {
+            "child1": 42,
+            "child2": 43,
+        },
+        "parent",
+    )
+
+    assert parent.values() == [42, 43]
+
+
+def test_items():
+    parent = create_dict_node(
+        {
+            "child1": 42,
+            "child2": 43,
+        },
+        "parent",
+    )
+
+    assert parent.items() == [("child1", 42), ("child2", 43)]
+
+
+def test_clear():
+    parent = create_dict_node(
+        {
+            "child1": 42,
+            "child2": 43,
+        },
+        "parent",
+    )
+
+    parent.clear()
+
+    assert parent.is_leaf()
+    assert parent.is_root()
+    assert parent.items() == []
+
+
+def test_update():
+    parent = create_dict_node(
+        {
+            "child1": 42,
+            "child2": 43,
+        },
+        "parent",
+    )
+
+    parent.update(
+        {
+            "child2": 44,
+            "child3": 45,
+        }
+    )
+
+    assert parent.items() == [("child1", 42), ("child2", 44), ("child3", 45)]
+
+
+def test_pop():
+    parent = create_dict_node(
+        {
+            "child1": 42,
+            "child2": 43,
+        },
+        "parent",
+    )
+
+    assert parent.pop("child1") == 42
+    assert parent.pop("child3", 45) == 45
+    assert parent.items() == [("child2", 43)]
+
+
+def test_popitem():
+    parent = create_dict_node(
+        {
+            "child1": 42,
+            "child2": 43,
+        },
+        "parent",
+    )
+
+    assert parent.popitem() == ("child2", 43)
+    assert parent.items() == [("child1", 42)]
+
+
+def test_setdefault():
+    parent = create_dict_node(
+        {
+            "child1": 42,
+            "child2": 43,
+        },
+        "parent",
+    )
+
+    assert parent.setdefault("child1", 44) == 42
+    assert parent.setdefault("child3", 45) == 45
+    assert parent.items() == [("child1", 42), ("child2", 43), ("child3", 45)]

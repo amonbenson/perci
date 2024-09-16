@@ -85,7 +85,7 @@ class ReactiveDictNode(ReactiveNode):
             return default
 
     def popitem(self) -> tuple[str, UnpackedType]:
-        key = next(iter(self.keys()))
+        key = next(reversed(self._children))
         value = self.pop(key)
         return key, value
 
