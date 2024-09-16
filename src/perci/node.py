@@ -185,7 +185,7 @@ class ReactiveNode:
         """
 
         if self._namespace:
-            raise ValueError(f"Node {self.get_absolute_key()} is already part of a namespace")
+            raise ValueError(f"Node {self.get_key()} is already part of a namespace")
 
         self._namespace = namespace
         self._path = path
