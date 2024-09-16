@@ -20,4 +20,4 @@ class ReactiveNamespace:
     def __init__(self, root_node: "ReactiveNode"):
         self.root = root_node
         self.change_tracker = ChangeTracker()
-        self.access_lock = threading.Lock()
+        self.lock = threading.Lock()

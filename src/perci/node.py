@@ -36,7 +36,7 @@ class ReactiveNode:
         self._parent: Optional[ReactiveNode] = None
 
         self._namespace: Optional[ReactiveNamespace] = None
-        self._path: list[str] = []
+        self._path: list[str] = [self._key]
 
     @staticmethod
     def is_key_valid(key: str) -> bool:
@@ -60,7 +60,7 @@ class ReactiveNode:
         if not self._namespace:
             raise MissingNamespaceError("Node is not part of a namespace")
 
-        return self._namespace.access_lock
+        return self._namespace.lock
 
     def _optional_namespace_lock(self) -> ContextManager:
         """
@@ -69,7 +69,7 @@ class ReactiveNode:
         :return: The lock of the namespace or a null context manager.
         """
 
-        return self._namespace.access_lock if self._namespace else nullcontext()
+        return self._namespace.lock if self._namespace else nullcontext()
 
     def get_key(self) -> str:
         """
@@ -109,7 +109,7 @@ class ReactiveNode:
         :raises ValueError: If the child already has a parent.
         """
 
-        with self._namespace.get_access_lock():
+        with self._namespace_lock():
             if child.get_key() in self._children:
                 raise KeyError(f"Child {child.get_key()} already exists")
             if child.get_parent():
@@ -130,7 +130,7 @@ class ReactiveNode:
         :raises KeyError: If the child does not exist.
         """
 
-        with self._namespace.get_access_lock():
+        with self._namespace_lock():
             if key not in self._children:
                 raise KeyError(f"Child {key} does not exist")
 
@@ -200,13 +200,6 @@ class ReactiveNode:
         """
 
         return self._path
-
-    def get_absolute_key(self) -> str:
-        """
-        Returns the absolute key of the node in the namespace.
-        """
-
-        return ".".join(self._path + [self._key])
 
     def is_leaf(self) -> bool:
         """

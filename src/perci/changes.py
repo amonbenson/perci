@@ -69,7 +69,7 @@ class ChangeTracker:
 
     def __init__(self):
         self._changes: list[Change] = []
-        self._access_lock = threading.Lock()
+        self._lock = threading.Lock()
 
     def push_change(self, change: Change):
         """
@@ -78,7 +78,7 @@ class ChangeTracker:
         :param change: The change to push.
         """
 
-        with self._access_lock:
+        with self._lock:
             self._changes.append(change)
 
     def get_changes(self) -> list[Change]:
@@ -90,7 +90,7 @@ class ChangeTracker:
         The changes are cleared from the tracker after retrieval.
         """
 
-        with self._access_lock:
+        with self._lock:
             changes = self._changes
             self._changes = []
             return changes
