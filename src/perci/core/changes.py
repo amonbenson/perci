@@ -2,6 +2,8 @@
 This module provides a class to track changes in the data model.
 """
 
+import threading
+
 # class ChangeHandler:
 #     """
 #     A handler for changes in the data model.
@@ -24,26 +26,29 @@ class ChangeTracker:
         self._changes: list[dict] = []
         # self._handlers: list[ChangeHandler] = []
 
+        self._lock = threading.Lock()
+
     def register(self, change_type: str, path: list[str], **kwargs):
         """
         Register a change in the data model.
         """
 
-        change = {"type": change_type, "path": path, **kwargs}
+        with self._lock:
+            change = {"type": change_type, "path": path, **kwargs}
 
-        # store the change
-        self._changes.append(change)
+            # store the change
+            self._changes.append(change)
 
-        # # remove a handler if its corresponding node is removed (e. g. the handler's path or any of its parents are removed)
-        # if change_type == "remove":
-        #     for handler in self._handlers:
-        #         if self._is_subpath(handler.path, path) or handler.path == path:
-        #             self._handlers.remove(handler)
+            # # remove a handler if its corresponding node is removed (e. g. the handler's path or any of its parents are removed)
+            # if change_type == "remove":
+            #     for handler in self._handlers:
+            #         if self._is_subpath(handler.path, path) or handler.path == path:
+            #             self._handlers.remove(handler)
 
-        # # invoke a handler if any change occurs on its path or any of its children
-        # for handler in self._handlers:
-        #     if self._is_subpath(path, handler.path) or handler.path == path:
-        #         handler.callback(change)
+            # # invoke a handler if any change occurs on its path or any of its children
+            # for handler in self._handlers:
+            #     if self._is_subpath(path, handler.path) or handler.path == path:
+            #         handler.callback(change)
 
     # def _is_subpath(self, p1: list[str], p2: list[str]) -> bool:
     #     """
@@ -72,3 +77,14 @@ class ChangeTracker:
         """
 
         return self._changes
+
+    def pop_changes(self):
+        """
+        Pop all changes.
+        """
+
+        with self._lock:
+            changes = self._changes
+            self._changes = []
+
+        return changes

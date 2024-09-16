@@ -3,7 +3,9 @@ This module defines the Node class, which is the building block of the tree stru
 """
 
 import re
+import threading
 from typing import Any, Optional
+from contextlib import nullcontext
 from .changes import ChangeTracker
 
 AtomicType = (int, float, str, bool)
@@ -70,35 +72,37 @@ class Node:
         :param child: The child node to add.
         """
 
-        if child.get_key() in self._children:
-            raise ValueError(f"Child with id {child.get_key()} already exists")
-        if child.get_parent() is not None:
-            raise ValueError("Child already has a parent")
+        with self.get_root().get_lock() if self.get_root() else nullcontext():
+            if child.get_key() in self._children:
+                raise ValueError(f"Child with id {child.get_key()} already exists")
+            if child.get_parent() is not None:
+                raise ValueError("Child already has a parent")
 
-        # pylint: disable=protected-access
-        self._children[child._key] = child
-        child._parent = self
-        child._update_path(self._path + [child._key])
-        child._update_root(self._root)
+            # pylint: disable=protected-access
+            self._children[child._key] = child
+            child._parent = self
+            child._update_path(self._path + [child._key])
+            child._update_root(self._root)
 
-        self._try_register_change("add", child.get_path())
+            self._try_register_change("add", child.get_path())
 
     def remove_child(self, child_id: str):
         """
         Remove a child node from this node.
         """
 
-        if child_id not in self._children:
-            raise ValueError(f"Child with id {child_id} does not exist")
+        with self.get_root().get_lock() if self.get_root() else nullcontext():
+            if child_id not in self._children:
+                raise ValueError(f"Child with id {child_id} does not exist")
 
-        child = self._children.pop(child_id)
+            child = self._children.pop(child_id)
 
-        self._try_register_change("remove", child.get_path())
+            self._try_register_change("remove", child.get_path())
 
-        # pylint: disable=protected-access
-        child._parent = None
-        child._update_path([child._key])
-        child._update_root(None)
+            # pylint: disable=protected-access
+            child._parent = None
+            child._update_path([child._key])
+            child._update_root(None)
 
     def has_child(self, key: str) -> bool:
         """
@@ -126,19 +130,21 @@ class Node:
         Set the value of the node.
         """
 
-        if self._value == value:
-            return
+        with self.get_root().get_lock() if self.get_root() else nullcontext():
+            if self._value == value:
+                return
 
-        self._value = value
+            self._value = value
 
-        self._try_register_change("update", self._path, value=value)
+            self._try_register_change("update", self._path, value=value)
 
     def get_value(self):
         """
         Get the value of the node.
         """
 
-        return self._value
+        with self.get_root().get_lock() if self.get_root() else nullcontext():
+            return self._value
 
     def get_root(self) -> Optional["RootNode"]:
         """
@@ -406,6 +412,8 @@ class RootNode(Node):
         self._root = self
         self._change_tracker = ChangeTracker()
 
+        self._lock = threading.Lock()
+
     def get_change_tracker(self) -> ChangeTracker:
         """
         Get the change tracker of the root node.
@@ -419,6 +427,13 @@ class RootNode(Node):
         """
 
         return self._change_tracker.get_changes()
+
+    def get_lock(self) -> threading.Lock:
+        """
+        Get the lock of the root node.
+        """
+
+        return self._lock
 
     @staticmethod
     def from_dict(data: dict, root_key: str = "root") -> "RootNode":
