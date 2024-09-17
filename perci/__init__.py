@@ -6,6 +6,7 @@ from typing import Optional
 from .namespace import ReactiveNamespace
 from .node import ReactiveNode, AtomicType
 from .dict_node import ReactiveDictNode
+from .list_node import ReactiveListNode
 from .watcher import Watcher, QueueWatcher
 
 
