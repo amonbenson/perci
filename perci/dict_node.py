@@ -56,6 +56,9 @@ class ReactiveDictNode(ReactiveNode):
 
         return key in self._children
 
+    def __len__(self) -> int:
+        return len(self._children)
+
     def get(self, key: str, default: Any = None) -> UnpackedType:
         try:
             return self[key]
