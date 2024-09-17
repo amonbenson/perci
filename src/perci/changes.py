@@ -2,7 +2,6 @@
 Provides classes for tracking changes in a reactive tree.
 """
 
-import threading
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -29,6 +28,8 @@ class AddChange(Change):
     """
 
     key: str
+    repr: str
+    value: Any
 
     def __post_init__(self):
         self.change_type = "add"

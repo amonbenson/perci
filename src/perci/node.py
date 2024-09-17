@@ -84,6 +84,13 @@ class ReactiveNode:
 
         return self._key
 
+    def get_value_repr(self) -> str:
+        """
+        Returns how this node should be represented to the user. Typically one of "value", "dict", or "list".
+        """
+
+        return "value" if self.is_leaf() else "node"
+
     def get_value(self) -> AtomicType:
         """
         Returns the value of the node.
@@ -113,7 +120,9 @@ class ReactiveNode:
                 return
 
             self._value = value
-            self._namespace.invoke_watcher(UpdateChange(path=self._path, value=value))
+
+            if self._namespace:
+                self._namespace.invoke_watcher(UpdateChange(path=self._path, value=value))
 
     def add_child(self, child: "ReactiveNode"):
         """
@@ -135,7 +144,7 @@ class ReactiveNode:
             child._parent = self  # pylint: disable=protected-access
             child.set_namespace(self._namespace, self._path + [child.get_key()])
 
-            self._namespace.invoke_watcher(AddChange(path=self._path, key=child.get_key()))
+            self._namespace.invoke_watcher(AddChange(path=self._path, key=child.get_key(), repr=child.get_value_repr(), value=child.get_value()))
 
     def remove_child(self, key: str):
         """
@@ -266,8 +275,8 @@ class ReactiveNode:
 
     def pack_atomic(self, key: str, value: AtomicType):
         child = ReactiveNode(key)
-        self.add_child(child)
         child.set_value(value)
+        self.add_child(child)
 
     def pack(self, key: str, value: Any):
         if type(value) not in ReactiveNode.PACK_METHODS:

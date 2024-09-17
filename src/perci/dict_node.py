@@ -3,6 +3,9 @@ from .node import ReactiveNode, AtomicType, UnpackedType
 
 
 class ReactiveDictNode(ReactiveNode):
+    def get_value_repr(self) -> str:
+        return "dict"
+
     def _invoke_nested_key_method(self, key: str, method: callable, *args, **kwargs) -> Any:
         path = key.split(".")
         if path[0] not in self._children:
