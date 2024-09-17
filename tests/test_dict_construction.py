@@ -1,7 +1,7 @@
 # pylint: skip-file
 
-from src.perci import create_dict_node
-from src.perci.dict_node import ReactiveDictNode
+from perci import create_dict_node
+from perci.dict_node import ReactiveDictNode
 
 
 def test_empty_node():

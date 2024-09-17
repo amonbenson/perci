@@ -1,8 +1,8 @@
 # pylint: skip-file
 
 from unittest.mock import Mock, call
-from src.perci import reactive, watch, create_queue_watcher
-from src.perci.changes import AddChange, RemoveChange, UpdateChange
+from perci import reactive, watch, create_queue_watcher
+from perci.changes import AddChange, RemoveChange, UpdateChange
 
 
 def test_add_keys():

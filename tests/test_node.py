@@ -1,8 +1,8 @@
 # pylint: skip-file
 
-from src.perci import create_root_node
-from src.perci.node import ReactiveNode
-from src.perci.namespace import ReactiveNamespace
+from perci import create_root_node
+from perci.node import ReactiveNode
+from perci.namespace import ReactiveNamespace
 
 
 def test_empty_node():
