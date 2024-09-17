@@ -1,8 +1,8 @@
 # pylint: skip-file
 
 from unittest.mock import Mock, call
-from src.perci import reactive, watch
-from src.perci.changes import Change, AddChange, RemoveChange, UpdateChange
+from src.perci import reactive, watch, create_queue_watcher
+from src.perci.changes import AddChange, RemoveChange, UpdateChange
 
 
 def test_add_keys():
@@ -94,7 +94,7 @@ def test_remove_keys():
     handler.reset_mock()
 
 
-def test_watcher_scope():
+def test_watcher_remove():
     state = reactive(
         {
             "name": {
@@ -144,3 +144,33 @@ def test_watcher_scope():
     # make sure that only the root handler remains
     assert len(state.get_namespace().get_watchers()) == 1
     assert state.get_namespace().get_watchers()[0].handler == root_handler
+
+
+def test_queue_watcher():
+    state = reactive(
+        {
+            "name": {
+                "first": "Alice",
+                "last": "Smith",
+            },
+            "age": 25,
+        }
+    )
+
+    watcher = create_queue_watcher(state)
+
+    state["name"] = {
+        "first": "Bob",
+        "last": "Johnson",
+    }
+
+    changes = watcher.get_changes()
+
+    assert changes == [
+        RemoveChange(path=["root"], key="name"),
+        AddChange(path=["root"], key="name"),
+        AddChange(path=["root", "name"], key="first"),
+        UpdateChange(path=["root", "name", "first"], value="Bob"),
+        AddChange(path=["root", "name"], key="last"),
+        UpdateChange(path=["root", "name", "last"], value="Johnson"),
+    ]
