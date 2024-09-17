@@ -50,6 +50,9 @@ class ReactiveListNode(ReactiveNode):
     def __len__(self) -> int:
         return len(self._children)
 
+    def __str__(self) -> str:
+        return f"ReactiveListNode([{', '.join(str(child) for child in self._children.values())}])"
+
     def pack_list(self, key: str, data: list):
         child = ReactiveListNode(key)
         self.add_child(child)

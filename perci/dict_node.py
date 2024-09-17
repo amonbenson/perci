@@ -101,6 +101,9 @@ class ReactiveDictNode(ReactiveNode):
 
         return self[key]
 
+    def __str__(self) -> str:
+        return f"ReactiveDictNode({{ {', '.join(f'{key}: {child}' for key, child in self._children.items())} }})"
+
     def pack_dict(self, key: str, data: dict):
         child = ReactiveDictNode(key)
         self.add_child(child)

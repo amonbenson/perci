@@ -258,7 +258,7 @@ class ReactiveNode:
         return self._parent is None
 
     def __str__(self) -> str:
-        return f"ReactiveNode({self._key})"
+        return str(self.unpack())
 
     def __repr__(self) -> str:
         return str(self)
