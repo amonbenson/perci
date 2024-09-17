@@ -4,7 +4,7 @@ load-plugins = ["pylint.extensions.docparams"]
 [tool.pylint."MESSAGES CONTROL"]
 max-line-length = 240
 enable = ["missing-param-doc", "missing-type-doc", "missing-return-doc", "missing-return-type-doc", "missing-yield-doc", "missing-yield-type-doc"]
-disable = ["logging-fstring-interpolation"]
+disable = ["logging-fstring-interpolation", "f-string-without-interpolation"]
 
 [tool.black]
 line-length = 240

@@ -72,3 +72,75 @@ def test_update_keys():
         ]
     )
     handler.reset_mock()
+
+
+def test_remove_keys():
+    state = reactive(
+        {
+            "name": "Alice",
+            "age": 25,
+        }
+    )
+
+    handler = Mock()
+    watch(state, handler)
+
+    del state["age"]
+    handler.assert_called_once_with(RemoveChange(path=["root"], key="age"))
+    handler.reset_mock()
+
+    del state["name"]
+    handler.assert_called_once_with(RemoveChange(path=["root"], key="name"))
+    handler.reset_mock()
+
+
+def test_watcher_scope():
+    state = reactive(
+        {
+            "name": {
+                "first": "Alice",
+                "last": "Smith",
+            },
+            "age": 25,
+        }
+    )
+
+    first_handler = Mock()
+    name_handler = Mock()
+    root_handler = Mock()
+
+    # setup watchers
+    watch(state["name"].get_child("first"), first_handler)
+    watch(state["name"], name_handler)
+    watch(state, root_handler)
+
+    # update age. This should trigger only the root handler
+    state["age"] = 26
+
+    first_handler.assert_not_called()
+    name_handler.assert_not_called()
+    root_handler.assert_called_once_with(UpdateChange(path=["root", "age"], value=26))
+
+    root_handler.reset_mock()
+
+    # update first name. This should trigger all the handlers
+    state["name"]["first"] = "Bob"
+
+    first_handler.assert_called_once_with(UpdateChange(path=["root", "name", "first"], value="Bob"))
+    name_handler.assert_called_once_with(UpdateChange(path=["root", "name", "first"], value="Bob"))
+    root_handler.assert_called_once_with(UpdateChange(path=["root", "name", "first"], value="Bob"))
+
+    first_handler.reset_mock()
+    name_handler.reset_mock()
+    root_handler.reset_mock()
+
+    # remove name. This should only trigger the root handler, as the other handlers are now invalid
+    del state["name"]
+
+    first_handler.assert_not_called()
+    name_handler.assert_not_called()
+    root_handler.assert_called_once_with(RemoveChange(path=["root"], key="name"))
+
+    # make sure that only the root handler remains
+    assert len(state.get_namespace().get_watchers()) == 1
+    assert state.get_namespace().get_watchers()[0].handler == root_handler

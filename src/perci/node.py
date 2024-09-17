@@ -154,6 +154,9 @@ class ReactiveNode:
             child._parent = None  # pylint: disable=protected-access
             child.set_namespace(None, [child.get_key()])
 
+            # remove any watchers for this child and its descendants
+            self._namespace.remove_watcher(self._path + [key])
+
             self._namespace.invoke_watcher(RemoveChange(path=self._path, key=key))
 
     def has_child(self, key: str) -> bool:
