@@ -164,7 +164,7 @@ class ReactiveNode:
             child.set_namespace(None, [child.get_key()])
 
             # remove any watchers for this child and its descendants
-            self._namespace.remove_watcher(self._path + [key])
+            self._namespace.remove_watcher_by_path(self._path + [key])
 
             self._namespace.invoke_watcher(RemoveChange(path=self._path, key=key))
 
