@@ -257,8 +257,18 @@ class ReactiveNode:
 
         return self._parent is None
 
+    def json(self) -> Any:
+        """
+        Returns a JSON-serializable representation of the node.
+        """
+
+        if self.is_leaf():
+            return self.get_value()
+        else:
+            return {key: child.json() for key, child in self._children.items()}
+
     def __str__(self) -> str:
-        return str(self.unpack())
+        return str(self.json())
 
     def __repr__(self) -> str:
         return str(self)

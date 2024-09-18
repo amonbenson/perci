@@ -50,8 +50,14 @@ class ReactiveListNode(ReactiveNode):
     def __len__(self) -> int:
         return len(self._children)
 
+    def json(self) -> Any:
+        return [child.json() for child in self._children.values()]
+
     def __str__(self) -> str:
         return f"ReactiveListNode([{', '.join(str(child) for child in self._children.values())}])"
+
+    def unpack(self) -> "ReactiveListNode":
+        return self
 
     def pack_list(self, key: str, data: list):
         child = ReactiveListNode(key)
