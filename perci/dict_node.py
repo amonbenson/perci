@@ -23,22 +23,78 @@ class ReactiveDictNode(ReactiveNode):
 
         return self._children[key].unpack()
 
+    def _setitem_replace(self, key: str, value: Any):
+        """
+        Set a key by completely replacing the old child with a new one
+        """
+
+        # remove the old child if any
+        if key in self._children:
+            self.remove_child(key)
+
+        # use the generic pack method to add the new child
+        self.pack(key, value)
+
+    def _setitem_sparse(self, key: str, value: Any):
+        """
+        Set a key by updating its descendants individually. This only works if both the old and new values are dict nodes
+        """
+
+        old_child = self._children[key]
+
+        # check which subkeys need to be added, updated or removed and perform the necessary operations
+        old_keys = set(old_child.keys())
+        new_keys = set(value.keys())
+
+        # remove keys that are not in the new value
+        for key in old_keys - new_keys:
+            old_child.remove_child(key)
+
+        # update keys that are in both the old and new values
+        for key in old_keys & new_keys:
+            old_child[key] = value[key]
+
+        # add keys that are not in the old value
+        for key in new_keys - old_keys:
+            old_child.pack(key, value[key])
+
+    def _can_use_setitem_sparse(self, key: str, value: Any) -> bool:
+        # child must exist
+        if key not in self._children:
+            return False
+
+        # child must be a dict node
+        if not isinstance(self._children[key], ReactiveDictNode):
+            return False
+
+        # value must be a dict
+        if not isinstance(value, dict):
+            return False
+
+        # check if there are any keys that need to be updated, e.g. that exist in both the old and new values
+        if set(self._children[key].keys()) & set(value.keys()):
+            return True
+
+        # if there are only keys to be added or removed, a sparse update does not make sense
+        return False
+
     def __setitem__(self, key: str, value: Any):
         if "." in key:
             self._invoke_nested_key_method(key, ReactiveDictNode.__setitem__, value)
             return
 
-        if old_child := self._children.get(key):
-            # if the old child is a leaf node and the new value is an atomic type, update the value directly
-            if old_child.is_leaf() and isinstance(value, AtomicType):
-                old_child.set_value(value)
-                return
+        old_child = self._children.get(key)
 
-            # remove the old child
-            self.remove_child(key)
+        # if the old child is a leaf node and the new value is an atomic type, update the value directly
+        if old_child and old_child.is_leaf() and isinstance(value, AtomicType):
+            old_child.set_value(value)
+            return
 
-        # use the generic pack method to add the new child
-        self.pack(key, value)
+        # use either the replace or update method to set the 
+        if self._can_use_setitem_sparse(key, value):
+            self._setitem_sparse(key, value)
+        else:
+            self._setitem_replace(key, value)
 
     def __delitem__(self, key: str):
         if "." in key:

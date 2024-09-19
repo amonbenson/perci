@@ -141,6 +141,33 @@ def test_watcher_remove():
     assert state.get_namespace().get_watchers()[0].handler == root_handler
 
 
+def test_update_sparse_keys():
+    state = reactive(
+        {
+            "name": {
+                "first": "Alice",
+                "last": "Smith",
+            },
+            "age": 25,
+        },
+    )
+
+    handler = Mock()
+    watch(state, handler)
+
+    state["name"] = {
+        "first": "Bob",
+        "last": "Johnson",
+    }
+    
+    handler.assert_has_calls(
+        [
+            call(UpdateChange(path=["root", "name", "first"], value="Bob")),
+            call(UpdateChange(path=["root", "name", "last"], value="Johnson")),
+        ]
+    )
+
+
 def test_queue_watcher():
     state = reactive(
         {
@@ -154,10 +181,10 @@ def test_queue_watcher():
 
     watcher = create_queue_watcher(state)
 
-    state["name"] = {
-        "first": "Bob",
-        "last": "Johnson",
-    }
+    # force a replace update
+    state["name"] = {}
+    state["name"]["first"] = "Bob"
+    state["name"]["last"] = "Johnson"
 
     changes = watcher.get_changes()
 
@@ -166,4 +193,17 @@ def test_queue_watcher():
         AddChange(path=["root"], key="name", repr="dict", value=None),
         AddChange(path=["root", "name"], key="first", repr="value", value="Bob"),
         AddChange(path=["root", "name"], key="last", repr="value", value="Johnson"),
+    ]
+
+    # force a sparse update
+    state["name"] = {
+        "first": "Alice",
+        "last": "Smith",
+    }
+
+    changes = watcher.get_changes()
+    
+    assert changes == [
+        UpdateChange(path=["root", "name", "first"], value="Alice"),
+        UpdateChange(path=["root", "name", "last"], value="Smith"),
     ]
