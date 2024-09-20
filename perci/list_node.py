@@ -9,9 +9,15 @@ class ReactiveListNode(ReactiveNode, MutableSequence):
         return "list"
 
     def _index_to_key(self, index: int, check_bounds: bool = True) -> str:
+        # handle negative indices
+        if index < 0:
+            index += len(self)
+
+        # check if the index is out of bounds
         if check_bounds and not (0 <= index < len(self._children)):
             raise IndexError(f"Index {index} out of bounds")
 
+        # convert the index to a string key
         return str(index)
 
     def _check_key_consistency(self):
@@ -43,12 +49,45 @@ class ReactiveListNode(ReactiveNode, MutableSequence):
         self.pack(key, value)
 
     def __delitem__(self, index: int):
+        """
+        let n = [x0, x1, x2, x3, x4, x5]
+        ==> n._children = {
+                "0": x0,
+                "1": x1,
+                "2": x2,
+                "3": x3,
+                "4": x4,
+                "5": x5,
+            }
+
+        del n[2]
+
+        ==> del n._children["2"]
+
+            let x3 = n._children["3"].pop()
+            x3.set_key("2")
+            add n._children["2"] = x3
+
+            let x4 = n._children["4"]
+            x4.set_key("3")
+            add n._children["3"] = x4
+
+        ==> n._children ={
+                "0": x0,
+                "1": x1,
+                "2": x3,
+                "3": x4,
+                "4": x5,
+            }
+        """
         key = self._index_to_key(index)
         self.remove_child(key)
 
-        # update the keys of the remaining children
-        for i in range(index + 1, len(self)):
-            self._children[self._index_to_key(i)].set_key(str(i - 1))
+        # reindex the remaining children (note that length is already decreased by 1. Also, index can be negative so we use the converted key)
+        for i in range(int(key) + 1, len(self) + 1):
+            child = self.remove_child(str(i))
+            child.set_key(str(i - 1))
+            self.add_child(child)
 
     def __len__(self) -> int:
         return len(self._children)

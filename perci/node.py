@@ -29,10 +29,10 @@ class ReactiveNode:
     PACK_METHODS: dict[type, callable] = {}
 
     def __init__(self, key: str):
-        self._key: str = key
         if not self.is_key_valid(key):
             raise ValueError(f"Key {key} is invalid")
 
+        self._key: str = key
         self._value: AtomicType = None
 
         self._children: dict[str, ReactiveNode] = {}
@@ -80,6 +80,23 @@ class ReactiveNode:
         """
 
         return self._key
+
+    def set_key(self, key: str):
+        """
+        Sets the key of the node. This only works if the node is not part of a namespace.
+
+        :param key: The new key of the node.
+
+        :raises ValueError: If the key is invalid.
+        """
+
+        if not self.is_key_valid(key):
+            raise ValueError(f"Key {key} is invalid")
+
+        if self._namespace:
+            raise ValueError("Cannot change key when node is part of a namespace")
+
+        self._key = key
 
     def get_value_repr(self) -> str:
         """
@@ -164,6 +181,8 @@ class ReactiveNode:
             self._namespace.remove_watcher_by_path(self._path + [key])
 
             self._namespace.invoke_watcher(RemoveChange(path=self._path, key=key))
+
+            return child
 
     def has_child(self, key: str) -> bool:
         """
