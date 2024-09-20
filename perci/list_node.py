@@ -83,7 +83,7 @@ class ReactiveListNode(ReactiveNode, MutableSequence):
         key = self._index_to_key(index)
         self.remove_child(key)
 
-        # reindex the remaining children (note that length is already decreased by 1. Also, index can be negative so we use the converted key)
+        # reindex the remaining children. Note that length is already decreased by 1. Also, index can be negative so we use the converted key
         for i in range(int(key) + 1, len(self) + 1):
             child = self.remove_child(str(i))
             child.set_key(str(i - 1))
@@ -102,9 +102,11 @@ class ReactiveListNode(ReactiveNode, MutableSequence):
     def insert(self, index: int, value: Any):
         key = self._index_to_key(index, check_bounds=False)
 
-        # update the keys of the remaining children
-        for i in range(index, len(self)):
-            self._children[self._index_to_key(i)].set_key(str(i + 1))
+        # reindex the children after the insertion point. Note that we need to iterate in reverse order
+        for i in range(len(self), index, -1):
+            child = self.remove_child(str(i - 1))
+            child.set_key(str(i))
+            self.add_child(child)
 
         self.pack(key, value)
 

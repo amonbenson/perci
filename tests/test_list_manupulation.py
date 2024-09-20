@@ -44,8 +44,8 @@ def test_delitem():
 
     assert list(state["test"].get_children()) == ["0"]
 
-    assert state["test"][0] == 43
     assert len(state["test"]) == 1
+    assert state["test"][0] == 43
 
     # delitem on unknown key
     with pytest.raises(IndexError):
@@ -58,3 +58,39 @@ def test_delitem():
     del state["test"][-1]
 
     assert len(state["test"]) == 0
+
+
+def test_append():
+    state = reactive(
+        {
+            "test": [42],
+        }
+    )
+
+    state["test"].append(43)
+
+    assert len(state["test"]) == 2
+    assert state["test"][1] == 43
+
+
+def test_insert():
+    state = reactive(
+        {
+            "test": [42, 44],
+        }
+    )
+
+    state["test"].insert(1, 43)
+
+    assert len(state["test"]) == 3
+    assert state["test"][1] == 43
+    assert state["test"][2] == 44
+
+    # insert at index 0
+    state["test"].insert(0, 41)
+
+    assert len(state["test"]) == 4
+    assert state["test"][0] == 41
+    assert state["test"][1] == 42
+    assert state["test"][2] == 43
+    assert state["test"][3] == 44
