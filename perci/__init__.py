@@ -38,7 +38,7 @@ def create_root_node(root_key: str = "root") -> ReactiveNode:
     return _create_node(ReactiveNode, root_key)
 
 
-def create_dict_node(data: Optional[dict] = None, root_key: str = "root") -> ReactiveNode:
+def create_dict_node(data: Optional[dict] = None, root_key: str = "root") -> ReactiveDictNode:
     """
     Creates a reactive tree from the given data.
 
