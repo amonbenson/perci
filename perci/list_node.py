@@ -1,5 +1,6 @@
 from typing import Any
-from .node import ReactiveNode, AtomicType, UnpackedType
+from .node import ReactiveNode
+from .types import UnpackedType, AtomicType
 
 
 class ReactiveListNode(ReactiveNode):

@@ -1,8 +1,10 @@
-from typing import Any
-from .node import ReactiveNode, AtomicType, UnpackedType
+from typing import Any, TypeVar
+from collections.abc import MutableMapping
+from .node import ReactiveNode
+from .types import AtomicType, UnpackedType
 
 
-class ReactiveDictNode(ReactiveNode):
+class ReactiveDictNode(ReactiveNode, MutableMapping):
     def get_value_repr(self) -> str:
         return "dict"
 
@@ -15,8 +17,7 @@ class ReactiveDictNode(ReactiveNode):
 
     def __getitem__(self, key: str) -> UnpackedType:
         if "." in key:
-            self._invoke_nested_key_method(key, ReactiveDictNode.__getitem__)
-            return
+            return self._invoke_nested_key_method(key, ReactiveDictNode.__getitem__)
 
         if key not in self._children:
             raise KeyError(f"Key {key} not found")
@@ -90,7 +91,7 @@ class ReactiveDictNode(ReactiveNode):
             old_child.set_value(value)
             return
 
-        # use either the replace or update method to set the 
+        # use either the replace or update method to set the
         if self._can_use_setitem_sparse(key, value):
             self._setitem_sparse(key, value)
         else:
@@ -106,14 +107,17 @@ class ReactiveDictNode(ReactiveNode):
 
         self.remove_child(key)
 
+    def __iter__(self):
+        return iter(self._children)
+
+    def __len__(self) -> int:
+        return len(self._children)
+
     def __contains__(self, key: str) -> bool:
         if "." in key:
             return self._invoke_nested_key_method(key, ReactiveDictNode.__contains__)
 
         return key in self._children
-
-    def __len__(self) -> int:
-        return len(self._children)
 
     def get(self, key: str, default: Any = None) -> UnpackedType:
         try:
@@ -129,33 +133,6 @@ class ReactiveDictNode(ReactiveNode):
 
     def items(self) -> list[tuple[str, UnpackedType]]:
         return [(key, child.unpack()) for key, child in self._children.items()]
-
-    def clear(self):
-        for key in self.keys():
-            self.remove_child(key)
-
-    def update(self, data: dict):
-        for k, v in data.items():
-            self[k] = v
-
-    def pop(self, key: str, default: Any = None) -> UnpackedType:
-        try:
-            value = self[key]
-            del self[key]
-            return value
-        except KeyError:
-            return default
-
-    def popitem(self) -> tuple[str, UnpackedType]:
-        key = next(reversed(self._children))
-        value = self.pop(key)
-        return key, value
-
-    def setdefault(self, key: str, default: Any = None) -> UnpackedType:
-        if key not in self:
-            self[key] = default
-
-        return self[key]
 
     def json(self) -> dict:
         return {key: child.json() for key, child in self._children.items()}

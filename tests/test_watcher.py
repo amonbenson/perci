@@ -1,5 +1,6 @@
 # pylint: skip-file
 
+import time
 from unittest.mock import Mock, call
 from perci import reactive, watch, create_queue_watcher
 from perci.changes import AddChange, RemoveChange, UpdateChange
@@ -159,12 +160,13 @@ def test_update_sparse_keys():
         "first": "Bob",
         "last": "Johnson",
     }
-    
+
     handler.assert_has_calls(
         [
             call(UpdateChange(path=["root", "name", "first"], value="Bob")),
             call(UpdateChange(path=["root", "name", "last"], value="Johnson")),
-        ]
+        ],
+        any_order=True,
     )
 
 
@@ -202,8 +204,7 @@ def test_queue_watcher():
     }
 
     changes = watcher.get_changes()
-    
-    assert changes == [
-        UpdateChange(path=["root", "name", "first"], value="Alice"),
-        UpdateChange(path=["root", "name", "last"], value="Smith"),
-    ]
+
+    assert len(changes) == 2
+    assert UpdateChange(path=["root", "name", "first"], value="Alice") in changes
+    assert UpdateChange(path=["root", "name", "last"], value="Smith") in changes

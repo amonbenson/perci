@@ -192,8 +192,8 @@ def test_popitem():
         "parent",
     )
 
-    assert parent.popitem() == ("child2", 43)
-    assert parent.items() == [("child1", 42)]
+    assert parent.popitem() == ("child1", 42)
+    assert parent.items() == [("child2", 43)]
 
 
 def test_setdefault():

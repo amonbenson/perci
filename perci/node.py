@@ -5,13 +5,10 @@ Provides a class to represent a node in a reactive tree.
 import re
 import threading
 from contextlib import nullcontext
-from typing import Any, Union, Optional, ContextManager
+from typing import Any, Optional, ContextManager
+from .types import AtomicType, UnpackedType
 from .namespace import ReactiveNamespace
 from .changes import AddChange, RemoveChange, UpdateChange
-
-
-AtomicType = int | float | str | bool | None
-UnpackedType = Union[AtomicType, "ReactiveNode"]
 
 
 class MissingNamespaceError(Exception):
