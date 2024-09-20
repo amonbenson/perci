@@ -1,9 +1,10 @@
 from typing import Any
+from collections.abc import MutableSequence
 from .node import ReactiveNode
 from .types import UnpackedType, AtomicType
 
 
-class ReactiveListNode(ReactiveNode):
+class ReactiveListNode(ReactiveNode, MutableSequence):
     def get_value_repr(self) -> str:
         return "list"
 
@@ -41,6 +42,17 @@ class ReactiveListNode(ReactiveNode):
         # use the generic pack method to add the new child
         self.pack(key, value)
 
+    def __delitem__(self, index: int):
+        key = self._index_to_key(index)
+        self.remove_child(key)
+
+        # update the keys of the remaining children
+        for i in range(index + 1, len(self)):
+            self._children[self._index_to_key(i)].set_key(str(i - 1))
+
+    def __len__(self) -> int:
+        return len(self._children)
+
     def __contains__(self, index: int) -> bool:
         try:
             self._index_to_key(index)
@@ -48,8 +60,14 @@ class ReactiveListNode(ReactiveNode):
         except IndexError:
             return False
 
-    def __len__(self) -> int:
-        return len(self._children)
+    def insert(self, index: int, value: Any):
+        key = self._index_to_key(index, check_bounds=False)
+
+        # update the keys of the remaining children
+        for i in range(index, len(self)):
+            self._children[self._index_to_key(i)].set_key(str(i + 1))
+
+        self.pack(key, value)
 
     def json(self) -> Any:
         return [child.json() for child in self._children.values()]

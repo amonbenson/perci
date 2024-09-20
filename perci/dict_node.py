@@ -1,4 +1,4 @@
-from typing import Any, TypeVar
+from typing import Any
 from collections.abc import MutableMapping
 from .node import ReactiveNode
 from .types import AtomicType, UnpackedType
