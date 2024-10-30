@@ -92,11 +92,12 @@ class ReactiveListNode(ReactiveNode, MutableSequence):
     def __len__(self) -> int:
         return len(self._children)
 
-    def __contains__(self, index: int) -> bool:
-        try:
-            self._index_to_key(index)
-            return True
-        except IndexError:
+    def __contains__(self, key: Any) -> bool:
+        if isinstance(key, ReactiveNode):
+            return any(child is key for child in self._children.values())
+        elif isinstance(key, AtomicType):
+            return any(child.is_leaf() and child.unpack() == key for child in self._children.values())
+        else:
             return False
 
     def insert(self, index: int, value: Any):

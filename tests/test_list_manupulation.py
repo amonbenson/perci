@@ -94,3 +94,29 @@ def test_insert():
     assert state["test"][1] == 42
     assert state["test"][2] == 43
     assert state["test"][3] == 44
+
+
+def test_contains():
+    state = reactive(
+        {
+            "test": [
+                42,
+                {"a": 43},
+            ],
+            "test2": [
+                "a",
+                "b",
+            ],
+        },
+    )
+
+    assert 42 in state["test"]
+    assert 43 not in state["test"]
+
+    # dicts must be matched by exact reference
+    assert {"a": 43} not in state["test"]
+    assert state["test"].get_child("1") in state["test"]
+
+    assert "a" in state["test2"]
+    assert "b" in state["test2"]
+    assert "c" not in state["test2"]
