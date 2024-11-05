@@ -50,7 +50,7 @@ class QueueWatcher(Watcher):
         super().__init__(path_pattern, self._on_change)
 
         self._changes: list[Change] = []
-        self._lock = threading.Lock()
+        self._lock = threading.RLock()
 
     def _on_change(self, change: Change):
         self._changes.append(change)

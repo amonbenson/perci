@@ -6,7 +6,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="perci",
-    version="0.2.1",
+    version="0.2.2",
     description="A simple reactive state management library.",
     author="Amon Benson",
     author_email="amonkbenson@gmail.com",

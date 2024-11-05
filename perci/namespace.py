@@ -20,7 +20,7 @@ class ReactiveNamespace:
 
     def __init__(self, root_node: "ReactiveNode"):
         self.root = root_node
-        self.lock = threading.Lock()
+        self.lock = threading.RLock()
 
         self._watchers: list[Watcher] = []
 
